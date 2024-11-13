@@ -1,0 +1,6 @@
+@QrHuntBackend_HostAddress = http://localhost:5237
+
+GET {{QrHuntBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
