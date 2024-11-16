@@ -3,6 +3,7 @@
     /// Represents the model for managing a game with its details such as name, end date, and winning score.
     /// </summary>
     public class GameManagementModel {
+        public int ID { get; set; }
         public string Name { get; set; }
         public DateTime EndDate { get; set; }
         public int WinningScore { get; set; }
@@ -51,17 +52,59 @@
     /// <summary>
     /// Represents a model for search results, containing a list of individual search result entries.
     /// </summary>
-    public class SearchResultModel {
-        public List<SearchResultEntryModel> Results { get; set; }
+    public class UserSearchResultModel {
+        public UserSearchResultModel() =>
+            Results = Array.Empty<UserSearchResultEntryModel>();
+
+        public UserSearchResultModel(UserSearchResultEntryModel[] results) {
+            Results = results;
+        }
+
+        public UserSearchResultEntryModel[] Results { get; set; }
     }
 
     /// <summary>
     /// Represents an entry in the search results with user ID, full name, and username.
     /// </summary>
-    public class SearchResultEntryModel {
-        public int ID { get; set; }
+    public class UserSearchResultEntryModel {
         public string Fullname { get; set; }
         public string Username { get; set; }
+    }
+
+    /// <summary>
+    /// Message model
+    /// </summary>
+    public class StatusMessageModel {
+        public StatusMessageModel() =>
+            Message = string.Empty;
+        
+        public StatusMessageModel(string message) =>
+            Message = message;
+        
+        public string Message { get; set; }
+    }
+    
+    /// <summary>
+    /// Model to upload Qr Codes in bulk
+    /// </summary>
+    public class UploadBulkQrCodesModel {
+        public string[] Codes { get; set; }
+    }
+
+    /// <summary>
+    /// Model used to fetch QR codes
+    /// </summary>
+    public class QrSearchResultModel {
+        public QrSearchResultEntryModel[] Results;
+    }
+
+    /// <summary>
+    /// Model used to represent a single line of result for QR search
+    /// </summary>
+    public class QrSearchResultEntryModel {
+        public string Content { get; set; }
+        public string Notes { get; set; }
+        public int ID { get; set; } 
     }
 
 }
