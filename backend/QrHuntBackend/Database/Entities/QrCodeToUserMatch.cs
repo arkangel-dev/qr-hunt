@@ -6,7 +6,9 @@ namespace QrHuntBackend.Database.Entities
     {
         [Key]
         public int Id { get; set; }
-        public User User { get; set; }
-        public Game Game { get; set; }
+        public string UserId { get; set; }
+        public int CodeId { get; set; }
+        public virtual User User { get; set; }
+        public virtual QrCode Code { get; set; }
     }
 }

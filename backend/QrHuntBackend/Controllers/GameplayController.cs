@@ -9,9 +9,11 @@ namespace QrHuntBackend.Controllers {
         /// Scan a QR Code and add it to the users score
         /// </summary>
         /// <param name="Code">Content of the code</param>
+        /// <param name="GameId">ID of the game</param>
         [HttpGet("{GameId}/Scan")]
         public IActionResult Scan(
             int GameId,
+
             [FromQuery]
             string Code
         ) {
@@ -22,6 +24,7 @@ namespace QrHuntBackend.Controllers {
         /// Verify a QR code and see if its valid
         /// </summary>
         /// <param name="Code">Content of the code</param>
+        /// <param name="GameId">ID of the game</param>
         [HttpGet("{GameId}/Verify")]
         public IActionResult Verify(
             int GameId,

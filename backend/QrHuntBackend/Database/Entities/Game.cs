@@ -9,6 +9,6 @@ namespace QrHuntBackend.Database.Entities
         public string Name { get; set; }
         public DateTime EndDate { get; set; }
         public int WinningScore { get; set; }
-        public List<QrCode> Codes { get; set; }
+        public virtual List<QrCode> Codes { get; set; }
     }
 }

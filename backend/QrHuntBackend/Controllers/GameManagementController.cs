@@ -24,7 +24,24 @@ namespace QrHuntBackend.Controllers {
         }
 
         /// <summary>
-        /// Create a new game
+        /// Get the available games registerd in the system. Supports pagination
+        /// </summary>
+        /// <param name="Take">Amount to take</param>
+        /// <param name="Skip">Amount of skip/offset</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetGames(
+            [FromQuery]
+            int Take = 0,
+
+            [FromQuery]
+            int Skip = 0
+        ) {
+            return NotFound("Not implemented yet");
+        }
+
+        /// <summary>
+        /// Create a new game. Will require a name that is unique
         /// </summary>
         /// <param name="model">Model describing the parameters of the game</param>
         [HttpPost("Create")]
@@ -76,12 +93,46 @@ namespace QrHuntBackend.Controllers {
         }
 
         /// <summary>
+        /// Get a list of all the QR codes in a game
+        /// </summary>
+        /// <param name="Take">How many QR codes to get</param>
+        /// <param name="Skip">How much to offset</param>
+        /// <param name="GameId">Game ID</param>
+        [HttpGet("{GameId}/QrCodes")]
+        [SwaggerResponse(statusCode: 200, type: typeof(QrSearchResultModel), description: "Returned when successful")]
+        [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
+        public IActionResult GetQrList(
+            int GameId,
+
+            [FromQuery]
+            int Take = 0,
+
+            [FromQuery]
+            int Skip = 0
+        ) {
+            var game = context.Games
+                .Include(x => x.Codes)
+                .SingleOrDefault(x => x.ID == GameId);
+            if (game is null) return NotFound(new StatusMessageModel("Game with the specified ID was not found"));
+
+            var results = game.Codes
+                .Skip(Skip)
+                .Take(Take)
+                .Select(x => new QrSearchResultEntryModel() {
+                    Content = x.Content,
+                    ID = x.ID,
+                    Notes = x.Notes,
+                });
+            return Ok(new QrSearchResultModel() { Results = results.ToArray() });
+        }
+
+        /// <summary>
         /// Upload a single QR Code
         /// </summary>
         /// <param name="GameId">ID of the game</param>
         /// <param name="Content">Content of the game</param>
         /// <param name="Notes">Notes for the game</param>
-        [HttpPost("{GameId}/QrCode/Upload")]
+        [HttpPost("{GameId}/QrCodes/Upload")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         [SwaggerResponse(statusCode: 400, type: typeof(StatusMessageModel), description: "Returned when a the code provided already exists")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when a the game ID provided was not found")]
@@ -112,7 +163,7 @@ namespace QrHuntBackend.Controllers {
         /// </summary>
         /// <param name="GameId">ID of the game to upload to</param>
         /// <param name="model">List of QR codes</param>
-        [HttpPost("{GameId}/QrCode/UploadBulk")]
+        [HttpPost("{GameId}/QrCodes/UploadBulk")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         [SwaggerResponse(statusCode: 400, type: typeof(StatusMessageModel), description: "Returned a code in the payload already exists in the game or if one of them is an empty string")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
@@ -138,45 +189,11 @@ namespace QrHuntBackend.Controllers {
         }
 
         /// <summary>
-        /// Get a list of all the QR codes in a game
-        /// </summary>
-        /// <param name="Take">How many QR codes to get</param>
-        /// <param name="Skip">How much to offset</param>
-        /// <param name="GameId">Game ID</param>
-        [HttpGet("{GameId}/QrCode/GetQrList")]
-        [SwaggerResponse(statusCode: 200, type: typeof(QrSearchResultModel), description: "Returned when successful")]
-        [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
-        public IActionResult GetQrList(
-            int GameId,
-
-            [FromQuery]
-            int Take = 0,
-
-            [FromQuery]
-            int Skip = 0
-        ) {
-            var game = context.Games
-                .Include(x => x.Codes)
-                .SingleOrDefault(x => x.ID == GameId);
-            if (game is null) return NotFound(new StatusMessageModel("Game with the specified ID was not found"));
-
-            var results = game.Codes
-                .Skip(Skip)
-                .Take(Take)
-                .Select(x => new QrSearchResultEntryModel() {
-                    Content = x.Content,
-                    ID = x.ID,
-                    Notes = x.Notes,
-                });
-            return Ok(new QrSearchResultModel() { Results = results.ToArray() });
-        }
-
-        /// <summary>
         /// Delete a single QR Code
         /// </summary>
         /// <param name="GameId">Game ID</param>
         /// <param name="QrId">QR Code ID</param>
-        [HttpPost("{GameId}/QrCode/Delete/{QrId}")]
+        [HttpPost("{GameId}/QrCodes/Delete/{QrId}")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when the operation is successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
         public IActionResult UploadBulk(int GameId, int QrId) {
@@ -197,7 +214,7 @@ namespace QrHuntBackend.Controllers {
         /// Delete all QR Codes in a game
         /// </summary>
         /// <param name="GameId">Game ID</param>
-        [HttpPost("{GameId}/QrCode/DeleteAll")]
+        [HttpPost("{GameId}/QrCodes/DeleteAll")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when the operation is successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when no QR codes were found")]
         public IActionResult DeleteAll(int GameId) {

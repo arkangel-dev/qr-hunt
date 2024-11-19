@@ -1,4 +1,7 @@
-﻿namespace QrHuntBackend.Models {
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+namespace QrHuntBackend.Models {
     /// <summary>
     /// Represents the model for managing a game with its details such as name, end date, and winning score.
     /// </summary>
@@ -107,4 +110,62 @@
         public int ID { get; set; } 
     }
 
+    public class AuthenticationResponseModel {
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public AuthenticationResponseModel() {
+            Message = "Failed to authenticate";
+            Successful = false;
+        }
+
+
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="token">Token</param>
+        /// <param name="issuedate">Issue Date</param>
+        /// <param name="expiredate">Expire Date</param>
+        public AuthenticationResponseModel(string token, DateTime issuedate, DateTime expiredate) {
+            Message = "Authentication Successful";
+            AccessToken = token;
+            Issued = issuedate;
+            Expires = expiredate;
+            Successful = true;
+        }
+
+
+        /// <summary>
+        /// Message
+        /// </summary>
+        public string Message { get; set; }
+        /// <summary>
+        /// Access token. Null if authentication failed
+        /// </summary>
+        [JsonPropertyName("access_token")]
+        public string? AccessToken { get; set; }
+        /// <summary>
+        /// Success flag
+        /// </summary>
+        public bool Successful { get; set; }
+        /// <summary>
+        /// Token type
+        /// </summary>
+        [DefaultValue("bearer")]
+        [JsonPropertyName("token_type")]
+        public string TokenType { get; set; } = "bearer";
+        /// <summary>
+        /// UTC time when the token expires. Null if unsuccessful
+        /// </summary>
+        [JsonPropertyName(".expires")]
+        public DateTime? Expires { get; set; }
+        /// <summary>
+        /// UTC time when the token was issued. Null if unsuccessful
+        /// </summary>
+        [JsonPropertyName(".issued")]
+        public DateTime? Issued { get; set; }
+
+    }
 }
