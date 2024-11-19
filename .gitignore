@@ -398,3 +398,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/backend/QrHuntBackend/database.db
+/backend/QrHuntBackend/database.db-shm
+/backend/QrHuntBackend/database.db-wal
+/backend/QrHuntBackend/QrHuntBackend.xml
