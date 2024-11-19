@@ -12,7 +12,6 @@
     },
     "https": {
       "commandName": "Project",
-      "workingDirectory": "C:\\Users\\samra\\source\\repos\\qr-hunt\\backend\\QrHuntBackend\\bin\\Debug\\net8.0",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {

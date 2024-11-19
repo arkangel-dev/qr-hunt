@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QrHuntBackend.Database;
@@ -13,6 +14,7 @@ namespace QrHuntBackend.Controllers {
     /// </summary>
     [ApiController]
     [Route("Api/Games")]
+    [Authorize(Roles = "moderator")]
     public class GameManagementController : ControllerBase {
 
         DatabaseContext context;

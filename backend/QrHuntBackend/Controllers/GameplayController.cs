@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace QrHuntBackend.Controllers {
     [ApiController]
     [Route("Api")]
+    [Authorize(Roles = "player")]
     public class GameplayController : ControllerBase {
        
         /// <summary>

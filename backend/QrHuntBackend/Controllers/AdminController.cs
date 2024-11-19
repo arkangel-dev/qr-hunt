@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QrHuntBackend.Database;
 using QrHuntBackend.Models;
@@ -9,6 +10,7 @@ namespace QrHuntBackend.Controllers {
     /// </summary>
     [ApiController]
     [Route("Api/Admin")]
+    [Authorize(Roles = "admin")]
     public class AdminController : ControllerBase {
 
         DatabaseContext context;
