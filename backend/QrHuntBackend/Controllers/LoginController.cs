@@ -26,13 +26,19 @@ namespace QrHuntBackend.Controllers {
         /// Login
         /// </summary>
         [HttpPost("Login")]
-        public IActionResult Login(LoginModel model) {
+        public IActionResult Login(
+            [FromForm]
+            string username,
+
+            [FromForm]
+            string password
+        ) {
             var user = context
                 .Users
-                .Find(model.Username);
+                .Find(username);
 
             if (user is null) return BadRequest(new StatusMessageModel("The username or password is invalid"));
-            if (!user.Password.SequenceEqual(Encoding.UTF8.GetBytes(model.Password))) return BadRequest(new StatusMessageModel("The username or password is invalid"));
+            if (!user.Password.SequenceEqual(Encoding.UTF8.GetBytes(password))) return BadRequest(new StatusMessageModel("The username or password is invalid"));
 
             return GenerateToken(user);
         }
@@ -43,7 +49,7 @@ namespace QrHuntBackend.Controllers {
         [HttpPost("Register")]
         public IActionResult Register(RegisterModel model) {
             var user = new User() {
-                Fullname = model.Username,
+                Fullname = model.Fullname,
                 Password = Encoding.UTF8.GetBytes(model.Password),
                 Username = model.Username,
                 Salt = []

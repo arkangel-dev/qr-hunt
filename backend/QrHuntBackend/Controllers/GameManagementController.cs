@@ -101,7 +101,7 @@ namespace QrHuntBackend.Controllers {
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when a game with the name could not be found")]
         public IActionResult Modify(int GameId, GameManagementModel model) {
-            var entity = context.Games.SingleOrDefault(x => x.ID == model.ID);
+            var entity = context.Games.SingleOrDefault(x => x.ID == GameId);
             if (entity is null) return NotFound(new StatusMessageModel("The game was not found"));
             entity.WinningScore = model.WinningScore;
             entity.EndDate = model.EndDate;
