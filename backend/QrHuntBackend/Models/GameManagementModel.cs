@@ -168,4 +168,25 @@ namespace QrHuntBackend.Models {
         public DateTime? Issued { get; set; }
 
     }
+
+    public class GameListModel {
+        public List<GameListEntryModel> Games { get; set; }
+    }
+
+    public class GameListEntryModel {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public DateTime EndDate { get; set; }
+        public int WinningScore { get; set; }
+    }
+
+    public class QrListModel {
+        public List<QrListEntryModel> Codes { get; set; }
+    }
+
+    public class QrListEntryModel {
+        public int ID { get; set; }
+        public string Content { get; set; }
+        public string Notes { get; set; }
+    }
 }

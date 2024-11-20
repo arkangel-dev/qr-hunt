@@ -30,8 +30,8 @@ namespace QrHuntBackend.Controllers {
         /// </summary>
         /// <param name="Take">Amount to take</param>
         /// <param name="Skip">Amount of skip/offset</param>
-        /// <returns></returns>
         [HttpGet]
+        [SwaggerResponse(statusCode: 200, type: typeof(GameListModel), description: "Returned when successful")]
         public IActionResult GetGames(
             [FromQuery]
             int Take = 0,
@@ -39,14 +39,46 @@ namespace QrHuntBackend.Controllers {
             [FromQuery]
             int Skip = 0
         ) {
-            return NotFound("Not implemented yet");
+            var games = context.Games
+                .Take(Take)
+                .Skip(Skip)
+                .Select(x =>
+                    new GameListEntryModel() {
+                        EndDate = x.EndDate,
+                        ID = x.ID,
+                        Name = x.Name,
+                        WinningScore = x.WinningScore
+                    }
+                )
+                .ToList();
+            return Ok(new GameListModel() { Games = games });
+        }
+
+        /// <summary>
+        /// Get a single game info
+        /// </summary>
+        /// <param name="gameId">Game ID</param>
+        [HttpGet("{gameId}")]
+        [SwaggerResponse(statusCode: 200, type: typeof(GameListEntryModel), description: "Returned when successful")]
+        [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when no results found")]
+        public IActionResult GetGame(int gameId) {
+            var game = context.Games
+                .Select(x => new GameListEntryModel() {
+                    ID = x.ID,
+                    EndDate = x.EndDate,
+                    Name = x.Name,
+                    WinningScore = x.WinningScore
+                })
+                .SingleOrDefault(x => x.ID == gameId);
+            if (game is null) return NotFound(new StatusMessageModel("Game not found"));
+            return Ok(game);
         }
 
         /// <summary>
         /// Create a new game. Will require a name that is unique
         /// </summary>
         /// <param name="model">Model describing the parameters of the game</param>
-        [HttpPost("Create")]
+        [HttpPost]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         [SwaggerResponse(statusCode: 400, type: typeof(StatusMessageModel), description: "Returned when a game with the same name already exists")]
         public IActionResult Create(GameManagementModel model) {
@@ -65,7 +97,7 @@ namespace QrHuntBackend.Controllers {
         /// </summary>
         /// <param name="GameId">ID of the existing game</param>
         /// <param name="model">Model describing the new parameters of the game</param>
-        [HttpPost("Modify/{GameId}")]
+        [HttpPatch("{GameId}")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when a game with the name could not be found")]
         public IActionResult Modify(int GameId, GameManagementModel model) {
@@ -82,7 +114,7 @@ namespace QrHuntBackend.Controllers {
         /// Delete an existing game
         /// </summary>
         /// <param name="GameId">Game to delete</param>
-        [HttpPost("Delete/{GameId}")]
+        [HttpDelete("{GameId}")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         public IActionResult Delete(int GameId) {
             var count = context.Games
@@ -195,7 +227,7 @@ namespace QrHuntBackend.Controllers {
         /// </summary>
         /// <param name="GameId">Game ID</param>
         /// <param name="QrId">QR Code ID</param>
-        [HttpPost("{GameId}/QrCodes/Delete/{QrId}")]
+        [HttpDelete("{GameId}/QrCodes/{QrId}")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when the operation is successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
         public IActionResult UploadBulk(int GameId, int QrId) {
@@ -216,7 +248,7 @@ namespace QrHuntBackend.Controllers {
         /// Delete all QR Codes in a game
         /// </summary>
         /// <param name="GameId">Game ID</param>
-        [HttpPost("{GameId}/QrCodes/DeleteAll")]
+        [HttpDelete("{GameId}/QrCodes")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when the operation is successful")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned when no QR codes were found")]
         public IActionResult DeleteAll(int GameId) {

@@ -26,7 +26,7 @@ namespace QrHuntBackend.Controllers {
         /// Set roles for a user
         /// </summary>
         /// <param name="model">Model describing the username and the role</param>
-        [HttpPost("SetRoles")]
+        [HttpPatch("SetRoles")]
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned of the user was not found")]
         [SwaggerResponse(statusCode: 200, type: typeof(StatusMessageModel), description: "Returned when successful")]
         public IActionResult Scan(SetRolesModel model) {
@@ -40,11 +40,14 @@ namespace QrHuntBackend.Controllers {
         /// <summary>
         /// Search for a user
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="query"></param>
         /// <returns></returns>
-        [HttpPost("Search")]
+        [HttpGet("Search")]
         [SwaggerResponse(statusCode: 200, type: typeof(UserSearchResultModel), description: "Returned results. By Default")]
-        public IActionResult SearchUser(string query) {
+        public IActionResult SearchUser(
+            [FromQuery]
+            string query
+        ) {
             var users = context.Users
                 .Where(x =>
                     x.Username.Contains(query) ||
