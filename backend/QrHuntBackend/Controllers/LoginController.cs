@@ -27,18 +27,14 @@ namespace QrHuntBackend.Controllers {
         /// </summary>
         [HttpPost("Login")]
         public IActionResult Login(
-            [FromForm]
-            string username,
-
-            [FromForm]
-            string password
+            LoginModel model
         ) {
             var user = context
                 .Users
-                .Find(username);
+                .Find(model.Username);
 
-            if (user is null) return BadRequest(new StatusMessageModel("The username or password is invalid"));
-            if (!user.Password.SequenceEqual(Encoding.UTF8.GetBytes(password))) return BadRequest(new StatusMessageModel("The username or password is invalid"));
+            if (user is null) return BadRequest(new StatusMessageModel("The phone number is invalid"));
+            if (!user.Password.SequenceEqual(Encoding.UTF8.GetBytes(model.Password))) return BadRequest(new StatusMessageModel("The phone number is invalid"));
 
             return GenerateToken(user);
         }
@@ -56,7 +52,7 @@ namespace QrHuntBackend.Controllers {
             };
 
             if (context.Users.Any(x => x.Username == model.Username))
-                return BadRequest(new StatusMessageModel("A user with this name already exists!"));
+                return BadRequest(new StatusMessageModel("Someone else is already registered with this phone number"));
 
             context.Users.Add(user);
             user.Roles = context.Users.Any() ? "player" : "admin,moderator,player";
