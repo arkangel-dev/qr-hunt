@@ -16,5 +16,5 @@
 
 <button bind:this={button} class={Class} on:click={OnClick}>
 	{Content}
-	<img src="./LoadingIcon.png" alt="icon" class="loader" />
+	<img src="/LoadingIcon.png" alt="icon" class="loader" />
 </button>

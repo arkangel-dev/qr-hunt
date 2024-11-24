@@ -203,7 +203,7 @@ namespace QrHuntBackend.Controllers {
         [SwaggerResponse(statusCode: 404, type: typeof(StatusMessageModel), description: "Returned the specified game doesn't exist")]
         public IActionResult UploadBulk(int GameId, UploadBulkQrCodesModel model) {
             var game = context.Games
-                .Include(x => x.ID == GameId)
+                .Include(x => x.Codes)
                 .SingleOrDefault(x => x.ID == GameId);
 
             if (game is null) return NotFound(new StatusMessageModel("The specified game was not found"));
@@ -217,7 +217,7 @@ namespace QrHuntBackend.Controllers {
             if (invalidCodes.Any(String.IsNullOrWhiteSpace)) return BadRequest(new StatusMessageModel("One or more code is an empty string"));
             if (invalidCodes.Any()) return BadRequest(new StatusMessageModel($"The following codes already exist in the game and cannot be added to the game : {String.Join(", ", invalidCodes)}"));
 
-            game.Codes.AddRange(model.Codes.Select(x => new QrCode() { Content = x }));
+            game.Codes.AddRange(model.Codes.Select(x => new QrCode() { Content = x, Notes = "Bulk Uploaded" }));
             context.SaveChanges();
             return Ok(new StatusMessageModel("Operation completed successfully"));
         }

@@ -63,6 +63,13 @@ body {
     display: inline;
 }
 
+.primary-outline {
+    background: none;
+    border: solid 2px var(--secondary-color);
+    color: var(--secondary-color);
+    box-shadow: none !important;
+}
+
 .btn.primary {
 
     background: var(--secondary-color);
@@ -77,7 +84,9 @@ body {
 .btn.primary-lowprofile {
     background: transparent;
     box-shadow: none;
-    color: var(--secondary-color)
+    color: var(--secondary-color);
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
 
@@ -93,12 +102,14 @@ body {
 }
 
 .banner-image img {
+    margin-top: 1rem;
     width: 20rem;
     max-width: 90vw;
 }
 
 .header {
     padding: 3rem 2rem;
+    padding-bottom: 1rem;
 }
 
 .header h1 {
@@ -179,7 +190,17 @@ body {
     fill: #d96a82 !important
 }
 
+.rootcontainer {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 90dvw;
+    width: 100%;
+}
 
+.rootcontainer .filler {
+    flex: 1 0 auto;
+}
 
 
 @keyframes spin {

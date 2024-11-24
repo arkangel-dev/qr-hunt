@@ -1,7 +1,7 @@
 <script>
     export let Code = "a0ac17cc-7e64-9d6e1373fd09"
 </script>
-<p class="code">Code: {Code}</p>
+<p class="code">{Code}</p>
 <style>
     .code {
         font-family: 'Jetbrains Mono';

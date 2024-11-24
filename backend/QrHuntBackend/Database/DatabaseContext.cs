@@ -10,7 +10,7 @@ namespace QrHuntBackend.Database {
             configuration = _configuration;
         }
         public DatabaseContext(DbContextOptions<DatabaseContext> connstr) : base(connstr) {
-            //Database.EnsureCreated();
+
         }
 
         public DbSet<Entities.Game> Games { get; set; }
@@ -20,7 +20,7 @@ namespace QrHuntBackend.Database {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             //optionsBuilder.UseNpgsql(configuration.GetConnectionString("MainApp"));
-            optionsBuilder.UseSqlite(configuration.GetConnectionString("Sqlite"));
+            optionsBuilder.UseSqlite(configuration.GetConnectionString("Sqlite")); 
             base.OnConfiguring(optionsBuilder);
         }
 

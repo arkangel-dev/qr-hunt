@@ -10,5 +10,6 @@ namespace QrHuntBackend.Database.Entities
         public int CodeId { get; set; }
         public virtual User User { get; set; }
         public virtual QrCode Code { get; set; }
+        public DateTime EntryDate { get; set; }
     }
 }

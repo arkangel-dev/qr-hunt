@@ -70,21 +70,47 @@ export async function Register(phonenumber, fullname) {
     }
 }
 
+
+const endpoint = 'http://192.168.100.4:7207';
+
 export async function MakePostRequest(url, body) {
-    const endpoint = 'http://192.168.100.4:7207';
     try {
+        let headers = { 'Content-Type': 'application/json' }
+        let token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${endpoint}${url}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify(body),
         });
 
         return response
     } catch (error) {
         console.error('Error making POST request:', error);
-        return rjson
+        return null
+    }
+}
+
+export async function MakeGetRequest(url) {
+    try {
+        let headers = { 'Content-Type': 'application/json' }
+        let token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
+        const response = await fetch(`${endpoint}${url}`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        return response
+    } catch (error) {
+        console.error('Error making GET request:', error);
+        return null
     }
 }
 

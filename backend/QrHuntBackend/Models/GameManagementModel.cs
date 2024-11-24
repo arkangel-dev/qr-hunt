@@ -41,6 +41,7 @@ namespace QrHuntBackend.Models {
     /// </summary>
     public class LeaderboardModel {
         public List<LeaderboardEntryModel> Leaderboard { get; set; }
+        public double TimeRemaining { get; set; }
     }
 
     /// <summary>
@@ -49,6 +50,8 @@ namespace QrHuntBackend.Models {
     public class LeaderboardEntryModel {
         public string Name { get; set; }
         public int Count { get; set; }
+        public DateTime LastEntry { get; set; }
+        public bool HasWon { get; set; }
     }
 
     /// <summary>
@@ -187,5 +190,10 @@ namespace QrHuntBackend.Models {
         public int ID { get; set; }
         public string Content { get; set; }
         public string Notes { get; set; }
+    }
+
+    public class ScanResult {
+        public string StatusCode { get; set; }
+        public bool IsAuthenticated { get; set; }
     }
 }

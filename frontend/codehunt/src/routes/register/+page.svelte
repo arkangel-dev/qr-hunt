@@ -71,13 +71,5 @@
 </div>
 
 <style>
-	.rootcontainer {
-		display: flex;
-		flex-direction: column;
-		height: 100dvh;
-	}
-
-	.rootcontainer .filler {
-		flex: 1 0 auto;
-	}
+	
 </style>
