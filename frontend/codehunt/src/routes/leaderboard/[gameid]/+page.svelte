@@ -1,16 +1,18 @@
 <script>
-	import { MakeGetRequest } from '$lib/BackendComms';
+	import { GetWebSocketUrl, MakeGetRequest } from '$lib/BackendComms';
 	import Header from '$lib/Header.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import WideButton from '$lib/WideButton.svelte';
 	import { goto } from '$app/navigation';
+	import { flip } from "svelte/animate";
 
 	let dataloaded = false;
 	let data = [];
 	let timeRemaining = 0; // Initial time in seconds (45 minutes, 23 seconds)
 	let timerDisplay = '--:--:--';
 	let refreshButton = null;
+	let gameid = ''
 
 	// Format seconds into HH:MM:SS
 	function formatTime(seconds) {
@@ -27,6 +29,7 @@
 	}
 
 	let timerInterval = null;
+	let isAuthenticated = false;
 	// Countdown timer
 	function startTimer() {
 		if (timerInterval) clearInterval(timerInterval);
@@ -43,7 +46,7 @@
 
 	async function refreshData() {
 		refreshButton.ShowLoader();
-		let gameid = $page.params.gameid;
+		gameid = $page.params.gameid;
 		let result = await MakeGetRequest(`/Api/${gameid}/GetLeaderboard`);
 		let rjson = await result.json();
 
@@ -56,9 +59,64 @@
 		}, 500);
 	}
 
+	
+
+	// Method to create a WebSocket connection and listen for SCOREUPDATED
+	async function connectWebSocket(url) {
+		return new Promise((resolve, reject) => {
+			const socket = new WebSocket(url);
+			socket.onopen = () => console.log("Connection opened");
+			socket.onerror = (err) => console.error("WebSocket error:", err);
+			socket.onclose = () => console.log("Connection closed");
+			// Open WebSocket connection
+			socket.onopen = () => {
+				console.log('WebSocket connection established.');
+				resolve(socket); // Resolve when connection is established
+			};
+
+			// Listen for messages in the background
+			socket.onmessage = async (event) => {
+				console.log('Message from server:', event.data);
+				if (event.data === 'SCOREUPDATED') {
+					await refreshData(); // Call the method when the specific message is received
+				}
+			};
+
+			// Handle errors
+			socket.onerror = (error) => {
+				console.error('WebSocket error:', error);
+				reject(error);
+			};
+
+			// Handle closure
+			socket.onclose = () => {
+				console.log('WebSocket connection closed.');
+			};
+		});
+	}
+
+	// Asynchronous wrapper to establish the connection
+	async function initiateWebSocket() {
+		try {
+			
+			const url = GetWebSocketUrl(`/Api/${gameid}/GetLeaderboard/ws`); // Replace with your actual WebSocket URL
+			console.log(`Connecting to ${url}`)
+			const socket = await connectWebSocket(url);
+			console.log('Connection established. WebSocket will continue listening for messages.');
+			return socket; // Return the WebSocket instance immediately
+		} catch (error) {
+			console.error('Failed to establish WebSocket connection:', error);
+			throw error; // Ensure the caller is aware of the failure
+		}
+	}
+
+
+
 	onMount(async () => {
 		// Start the timer
 		await refreshData();
+		await initiateWebSocket();
+		isAuthenticated = localStorage.getItem('token')
 	});
 </script>
 
@@ -66,8 +124,8 @@
 	<Header Title="Leaderboard" Subtitle="Lets see who’s winning this game!" />
 	{#if dataloaded}
 		<div class="leaderboard">
-			{#each data as line}
-				<div class="line {line.hasWon ? 'winner' : ''}">
+			{#each data as line (line.name)}
+				<div animate:flip="{{ duration: 600 }}" class="line {line.hasWon ? 'winner' : ''}">
 					<h1>
 						{line.name}
 						{#if line.hasWon}
@@ -92,7 +150,9 @@
 	{/if}
 
 	<div class="container vertical">
-		<WideButton Content="Logout" Class="btn big secondary" OnClick={() => goto("/logout")}/>
+		{#if (isAuthenticated)} 
+			<WideButton Content="Logout" Class="btn big secondary" OnClick={() => goto('/logout')} />
+		{/if}
 		<WideButton
 			bind:this={refreshButton}
 			Content="Refresh"
@@ -103,12 +163,11 @@
 </div>
 
 <style>
-
 	.container.vertical {
 		display: flex;
 		flex-direction: row !important;
 		margin-bottom: 2rem;
-		gap: 1rem
+		gap: 1rem;
 	}
 
 	:global(.container.vertical button:nth-child(1)) {
@@ -126,7 +185,7 @@
 		flex-direction: column;
 		padding: 1rem 2rem;
 		margin-bottom: 3rem;
-		gap: 1rem;
+		gap: .75rem;
 		overflow: auto;
 	}
 
@@ -135,19 +194,22 @@
 		display: flex;
 		justify-content: space-between;
 		font-family: 'Inter';
-		padding-left: 2rem;
-		padding-right: 2rem;
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
+		border-radius: 1rem;
+
+		padding-top: .75rem;
+		padding-bottom: .75rem;
+		background: #f2f6da;
 	}
 
 	.leaderboard .line.winner {
 		background: #2e3b41;
-		color: #c0c3b0;
-		border-radius: 1rem;
+		color: #f2f6da;
 		display: flex;
-		align-items: center;
-		padding-top: 1rem;
+		align-items: center;	padding-top: 1rem;
+		box-shadow: 0px 0px 10px #0000007a !important;
 		padding-bottom: 1rem;
-		box-shadow: inset 0px 0px 10px #0000007a !important;
 	}
 
 	.leaderboard .line.winner img {

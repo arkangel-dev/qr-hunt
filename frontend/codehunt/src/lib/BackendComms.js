@@ -72,6 +72,11 @@ export async function Register(phonenumber, fullname) {
 
 
 const endpoint = 'http://192.168.100.4:7207';
+const websocket_url = 'ws://192.168.100.4:7207'
+
+export function GetWebSocketUrl(url)  {
+    return `${websocket_url}${url}`
+}
 
 export async function MakePostRequest(url, body) {
     try {

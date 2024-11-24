@@ -90,10 +90,6 @@ body {
 }
 
 
-.container {
-    padding: 0px 1.5rem;
-}
-
 
 .banner-image {
     width: 100%;
@@ -178,6 +174,7 @@ body {
     border-radius: 1rem;
     backdrop-filter: blur(2px);
 }
+
 .st-toast p {
     color: #fbfdf1
 }
@@ -186,7 +183,7 @@ body {
     color: #f2f6da;
 }
 
-.st-toast.dark.error .st-toast-icon{
+.st-toast.dark.error .st-toast-icon {
     fill: #d96a82 !important
 }
 
@@ -195,7 +192,15 @@ body {
     flex-direction: column;
     height: 100dvh;
     max-width: 90dvw;
+    /* max-width: 30rem; */
     width: 100%;
+
+}
+
+@media screen and (min-width: 500px) {
+    .rootcontainer {
+        max-width: 30rem !important;
+    }
 }
 
 .rootcontainer .filler {
@@ -205,9 +210,10 @@ body {
 
 @keyframes spin {
     from {
-        transform:rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-        transform:rotate(360deg);
+        transform: rotate(360deg);
     }
 }

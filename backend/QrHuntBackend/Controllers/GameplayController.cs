@@ -5,6 +5,9 @@ using QrHuntBackend.Database;
 using QrHuntBackend.Models;
 using QrHuntBackend.Utilities;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace QrHuntBackend.Controllers {
     [ApiController]
@@ -29,7 +32,7 @@ namespace QrHuntBackend.Controllers {
         /// <param name="GameId">ID of the game</param>
         [HttpPost("{GameId}/Scan")]
         [SwaggerResponse(statusCode: 200, type: typeof(ScanResult), description: "Returned always")]
-        public IActionResult Scan(
+        public async Task<IActionResult> Scan(
             int GameId,
 
             [FromQuery]
@@ -71,10 +74,12 @@ namespace QrHuntBackend.Controllers {
 
                 context.QrCodesToUserMatch.Add(new Database.Entities.QrCodeToUserMatch() {
                     CodeId = code.ID,
-                    UserId = currentUser.Username
+                    UserId = currentUser.Username,
+                    EntryDate = DateTime.Now
                 });
-
                 context.SaveChanges();
+                await BroadcastMessage("SCOREUPDATED");
+
                 if (game.Winner is null && context.QrCodesToUserMatch
                     .Where(x => x.UserId == currentUser.Username && x.Code.Game.ID == GameId)
                     .Count() >= game.WinningScore) {
@@ -101,6 +106,30 @@ namespace QrHuntBackend.Controllers {
 
         [SwaggerResponse(statusCode: 200, type: typeof(LeaderboardModel), description: "Returned when successful")]
         public IActionResult GetLeaderboard(int GameId) {
+
+            //var names = new[] { "Sammy", "Jimmy", "Tommy", "Bobby", "Thoo", "Noodle", "Kalaj", "Shad" };
+
+            //var leaderboardData = names.Select(x =>
+            //    new LeaderboardEntryModel() {
+            //        Count = Random.Shared.Next(50),
+            //        LastEntry = DateTime.Now,
+            //        Name = x
+            //    }
+            //)
+            //    .OrderByDescending(x => x.Count)
+            //    .ToList();
+
+            //var winner = leaderboardData
+            //    .OrderByDescending(x => x.Count)
+            //    .FirstOrDefault();
+            //if (winner is not null)
+            //    winner.HasWon = true;
+
+            //return Ok(new LeaderboardModel() {
+            //    Leaderboard = leaderboardData,
+            //    TimeRemaining = (DateTime.Now.AddHours(5) - DateTime.Now).TotalSeconds
+            //});
+
             var game = context.Games.Find(GameId);
             if (game is null)
                 return NotFound(new StatusMessageModel("No such game was found"));
@@ -114,20 +143,67 @@ namespace QrHuntBackend.Controllers {
                     LastEntry = x.OrderBy(x => x.EntryDate).Last().EntryDate
                 })
                 .OrderByDescending(x => x.Count)
-                .ThenByDescending(x => x.LastEntry)
+                .ThenBy(x => x.LastEntry)
                 .ToList();
 
             var winner = leaderboardData
                 .Where(x => x.Count >= game.WinningScore)
                 .FirstOrDefault();
             if (winner is not null)
-                winner.HasWon = true; 
+                winner.HasWon = true;
 
-            
+
             return Ok(new LeaderboardModel() {
                 Leaderboard = leaderboardData,
                 TimeRemaining = (game.EndDate - DateTime.Now).TotalSeconds
             });
+        }
+
+        [HttpGet("TriggerRefresh")]
+        public async Task<IActionResult> TriggerTest() {
+            await BroadcastMessage("SCOREUPDATED");
+            return Ok();
+        }
+
+        private static List<WebSocket> sockets = new List<WebSocket>();
+
+        [HttpGet("{GameId}/GetLeaderboard/ws")]
+        public async Task<IActionResult> Get(int GameId) {
+            if (sockets.Count() >= 100) return BadRequest("MAX_LIMIT");
+            if (HttpContext.WebSockets.IsWebSocketRequest) {
+                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                sockets.Add(webSocket);
+
+                try {
+                    // Wait until the client closes the WebSocket connection
+                    while (webSocket.State == WebSocketState.Open) {
+                        await Task.Delay(100); // Minimal delay to prevent CPU overuse
+                    }
+                } finally {
+                    sockets.Remove(webSocket);
+                    webSocket.Dispose();
+                }
+                return Ok();
+            } else {
+                return BadRequest("INVALID_METHOD");
+            }
+        }
+
+        // Method to broadcast messages to all connected clients
+        public static async Task BroadcastMessage(string message) {
+            var messageBuffer = Encoding.UTF8.GetBytes(message);
+            var tasks = sockets.Where(socket => socket.State == WebSocketState.Open)
+                                .Select(socket => socket.SendAsync(
+                                    new ArraySegment<byte>(messageBuffer),
+                                    WebSocketMessageType.Text,
+                                    endOfMessage: true,
+                                    CancellationToken.None));
+
+            try {
+                await Task.WhenAll(tasks);
+            } catch (Exception ex) {
+                Console.WriteLine($"Error broadcasting message: {ex.Message}");
+            }
         }
 
     }

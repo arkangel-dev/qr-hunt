@@ -51,6 +51,9 @@ namespace QrHuntBackend.Controllers {
                 Salt = []
             };
 
+            if (model.Fullname.Length > 16)
+                return BadRequest(new StatusMessageModel("Name must be less than 16 characters"));
+
             if (context.Users.Any(x => x.Username == model.Username))
                 return BadRequest(new StatusMessageModel("Someone else is already registered with this phone number"));
 
