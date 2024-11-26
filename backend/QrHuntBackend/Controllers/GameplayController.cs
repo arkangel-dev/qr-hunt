@@ -183,6 +183,7 @@ namespace QrHuntBackend.Controllers {
                                     WebSocketMessageType.Text,
                                     endOfMessage: true,
                                     CancellationToken.None);
+                        await Task.Delay(5000)
                     }
                 } finally {
                     sockets.Remove(webSocket);
