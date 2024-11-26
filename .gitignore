@@ -402,3 +402,4 @@ FodyWeavers.xsd
 /backend/QrHuntBackend/database.db-shm
 /backend/QrHuntBackend/database.db-wal
 /backend/QrHuntBackend/QrHuntBackend.xml
+data

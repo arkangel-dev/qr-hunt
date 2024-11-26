@@ -1,0 +1,40 @@
+services:
+    backend:
+        build:
+            context: backend
+            dockerfile: Dockerfile
+        image: qr-hunt-backend:latest
+        container_name: backend
+        # ports:
+            # - "7207:7207" # Map host port 8080 to container port 80
+        environment:
+            - ENV=production
+            - DEBUG=false
+        volumes:
+            - ./data/backend:/var/data
+            - ./data/backend/appsettings.json:/app/appsettings.json
+        restart: unless-stopped
+
+    frontend:
+        build:
+            context: frontend/codehunt
+            dockerfile: Dockerfile
+        image: qr-hunt-frontend:latest
+        container_name: frontend
+        # ports:
+            # - "7207:7207" # Map host port 8080 to container port 80
+        environment:
+            - ENV=production
+            - DEBUG=false
+        # volumes:
+        #     - ./data/backend:/var/data
+        #     - ./data/backend/appsettings.json:/app/appsettings.json
+        restart: unless-stopped
+
+    nginx:
+        image: nginx:latest
+        ports:
+            - "80:80" # Map host port 80 to container port 80
+        volumes:
+            - ./data/nginx.conf:/etc/nginx/nginx.conf:ro # Mount custom NGINX configuration
+            - ./data/nginx-logs:/var/log/nginx # Mount logs for easier debugging

@@ -6,6 +6,7 @@
 <ToastContainer let:data>
 	<FlatToast {data} />
 </ToastContainer>
+
 <slot/>
 <style>
  

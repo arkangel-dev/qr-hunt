@@ -5,7 +5,8 @@ export default defineConfig({
 	plugins: [sveltekit(), MDHmr()],
 	test: {
 		include: ['static/**/*.{test,spec}.{js,ts}']
-	}
+	},
+	
 });
 
 function MDHmr() {
