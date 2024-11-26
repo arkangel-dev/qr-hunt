@@ -177,7 +177,12 @@ namespace QrHuntBackend.Controllers {
                 try {
                     // Wait until the client closes the WebSocket connection
                     while (webSocket.State == WebSocketState.Open) {
-                        await Task.Delay(100); // Minimal delay to prevent CPU overuse
+                        var messageBuffer = Encoding.UTF8.GetBytes("PING");
+                        await webSocket.SendAsync(
+                                    new ArraySegment<byte>(messageBuffer),
+                                    WebSocketMessageType.Text,
+                                    endOfMessage: true,
+                                    CancellationToken.None);
                     }
                 } finally {
                     sockets.Remove(webSocket);
