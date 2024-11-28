@@ -155,7 +155,7 @@ namespace QrHuntBackend.Controllers {
 
             return Ok(new LeaderboardModel() {
                 Leaderboard = leaderboardData,
-                TimeRemaining = (game.EndDate - DateTime.Now).TotalSeconds
+                TimeRemaining = (game.EndDate - DateTime.UtcNow).TotalSeconds
             });
         }
 
