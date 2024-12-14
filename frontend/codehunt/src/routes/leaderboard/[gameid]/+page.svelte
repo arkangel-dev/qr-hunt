@@ -5,14 +5,15 @@
 	import { page } from '$app/stores';
 	import WideButton from '$lib/WideButton.svelte';
 	import { goto } from '$app/navigation';
-	import { flip } from "svelte/animate";
+	import { flip } from 'svelte/animate';
 
 	let dataloaded = false;
 	let data = [];
 	let timeRemaining = 0; // Initial time in seconds (45 minutes, 23 seconds)
 	let timerDisplay = '--:--:--';
 	let refreshButton = null;
-	let gameid = ''
+	let gameid = '';
+	let errorMessage = null;
 
 	// Format seconds into HH:MM:SS
 	function formatTime(seconds) {
@@ -47,27 +48,30 @@
 	async function refreshData() {
 		refreshButton.ShowLoader();
 		gameid = $page.params.gameid;
-		let result = await MakeGetRequest(`/Api/${gameid}/GetLeaderboard`);
-		let rjson = await result.json();
-
-		data = rjson.leaderboard;
-		timeRemaining = rjson.timeRemaining;
-		startTimer();
-		dataloaded = true;
-		setTimeout(() => {
-			refreshButton.HideLoader();
-		}, 500);
+		try {
+			let result = await MakeGetRequest(`/Api/${gameid}/GetLeaderboard`);
+			let rjson = await result.json();
+			data = rjson.leaderboard;
+			timeRemaining = rjson.timeRemaining;
+			startTimer();
+			dataloaded = true;
+		} catch {
+			errorMessage = 'Data could not fetched for this game';
+			dataloaded = true;
+		} finally {
+			setTimeout(() => {
+				refreshButton.HideLoader();
+			}, 500);
+		}
 	}
-
-	
 
 	// Method to create a WebSocket connection and listen for SCOREUPDATED
 	async function connectWebSocket(url) {
 		return new Promise((resolve, reject) => {
 			const socket = new WebSocket(url);
-			socket.onopen = () => console.log("Connection opened");
-			socket.onerror = (err) => console.error("WebSocket error:", err);
-			socket.onclose = () => console.log("Connection closed");
+			socket.onopen = () => console.log('Connection opened');
+			socket.onerror = (err) => console.error('WebSocket error:', err);
+			socket.onclose = () => console.log('Connection closed');
 			// Open WebSocket connection
 			socket.onopen = () => {
 				console.log('WebSocket connection established.');
@@ -98,9 +102,8 @@
 	// Asynchronous wrapper to establish the connection
 	async function initiateWebSocket() {
 		try {
-			
 			const url = GetWebSocketUrl(`/Api/${gameid}/GetLeaderboard/ws`); // Replace with your actual WebSocket URL
-			console.log(`Connecting to ${url}`)
+			console.log(`Connecting to ${url}`);
 			const socket = await connectWebSocket(url);
 			console.log('Connection established. WebSocket will continue listening for messages.');
 			return socket; // Return the WebSocket instance immediately
@@ -110,37 +113,47 @@
 		}
 	}
 
-
-
 	onMount(async () => {
 		// Start the timer
 		await refreshData();
 		await initiateWebSocket();
-		isAuthenticated = localStorage.getItem('token')
+		isAuthenticated = localStorage.getItem('token');
 	});
 </script>
 
 <div class="rootcontainer">
 	<Header Title="Leaderboard" Subtitle="Lets see who’s winning this game!" />
 	{#if dataloaded}
-		<div class="leaderboard">
-			{#each data as line (line.name)}
-				<div animate:flip="{{ duration: 600 }}" class="line {line.hasWon ? 'winner' : ''}">
-					<h1>
-						{line.name}
-						{#if line.hasWon}
-							<img src="/Crown.svg" alt="crown" />
-						{/if}
-					</h1>
-					<h2>{line.count}</h2>
+		{#if errorMessage == null}
+			<div class="leaderboard">
+				{#each data as line (line.name)}
+					<div animate:flip={{ duration: 600 }} class="line {line.hasWon ? 'winner' : ''}">
+						<h1>
+							{line.name}
+							{#if line.hasWon}
+								<img src="/Crown.svg" alt="crown" />
+							{/if}
+						</h1>
+						<h2>{line.count}</h2>
+					</div>
+				{/each}
+			</div>
+			<div class="filler"></div>
+			<div class="timer-container">
+				<h1>Time Remaining</h1>
+				<p>{timerDisplay}</p>
+			</div>
+		{:else}
+			<div class="container">
+				<div class="banner-image">
+					<img src="/InvalidCode.png" alt="CodeEntered" />
 				</div>
-			{/each}
-		</div>
-		<div class="filler"></div>
-		<div class="timer-container">
-			<h1>Time Remaining</h1>
-			<p>{timerDisplay}</p>
-		</div>
+			</div>
+			<div class="gamenotfound">
+				<p>The game you're looking for was not be loaded. Maybe it got deleted or something</p>
+			</div>
+			<div class="filler"></div>
+		{/if}
 	{:else}
 		<div class="loading">
 			<p>Loading...</p>
@@ -150,7 +163,7 @@
 	{/if}
 
 	<div class="container vertical">
-		{#if (isAuthenticated)} 
+		{#if isAuthenticated}
 			<WideButton Content="Logout" Class="btn big secondary" OnClick={() => goto('/logout')} />
 		{/if}
 		<WideButton
@@ -185,7 +198,7 @@
 		flex-direction: column;
 		padding: 1rem 2rem;
 		margin-bottom: 3rem;
-		gap: .75rem;
+		gap: 0.75rem;
 		overflow: auto;
 	}
 
@@ -198,8 +211,8 @@
 		padding-right: 1.5rem;
 		border-radius: 1rem;
 
-		padding-top: .75rem;
-		padding-bottom: .75rem;
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
 		background: #f2f6da;
 	}
 
@@ -207,7 +220,8 @@
 		background: #2e3b41;
 		color: #f2f6da;
 		display: flex;
-		align-items: center;	padding-top: 1rem;
+		align-items: center;
+		padding-top: 1rem;
 		box-shadow: 0px 0px 10px #0000007a !important;
 		padding-bottom: 1rem;
 	}
@@ -226,6 +240,13 @@
 		font-size: 1.25rem;
 		margin: 0;
 		font-weight: 400;
+	}
+
+	.gamenotfound p {
+		text-align: center;
+		font-family: 'Inter';
+		font-size: 1.15rem;
+		color: #2e3b41;
 	}
 
 	.loading {
