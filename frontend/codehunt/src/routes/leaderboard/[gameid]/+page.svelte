@@ -6,6 +6,7 @@
 	import WideButton from '$lib/WideButton.svelte';
 	import { goto } from '$app/navigation';
 	import { flip } from 'svelte/animate';
+	import FadingScroll from '../../../lib/FadingScroll.svelte';
 
 	let dataloaded = false;
 	let data = [];
@@ -125,19 +126,21 @@
 	<Header Title="Leaderboard" Subtitle="Lets see who’s winning this game!" />
 	{#if dataloaded}
 		{#if errorMessage == null}
-			<div class="leaderboard">
-				{#each data as line (line.name)}
-					<div animate:flip={{ duration: 600 }} class="line {line.hasWon ? 'winner' : ''}">
-						<h1>
-							{line.name}
-							{#if line.hasWon}
-								<img src="/Crown.svg" alt="crown" />
-							{/if}
-						</h1>
-						<h2>{line.count}</h2>
-					</div>
-				{/each}
-			</div>
+			<FadingScroll>
+				<div class="leaderboard">
+					{#each data as line (line.name)}
+						<div animate:flip={{ duration: 600 }} class="line {line.hasWon ? 'winner' : ''}">
+							<h1>
+								{line.name}
+								{#if line.hasWon}
+									<img src="/Crown.svg" alt="crown" />
+								{/if}
+							</h1>
+							<h2>{line.count}</h2>
+						</div>
+					{/each}
+				</div>
+			</FadingScroll>
 			<div class="filler"></div>
 			<div class="timer-container">
 				<h1>Time Remaining</h1>
@@ -199,7 +202,6 @@
 		padding: 1rem 2rem;
 		margin-bottom: 3rem;
 		gap: 0.75rem;
-		overflow: auto;
 	}
 
 	.leaderboard .line {
@@ -266,6 +268,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		margin-top:  2rem;
 	}
 
 	.timer-container h1 {
